@@ -1,3 +1,34 @@
+const author_ = new normalizr.schema.Entity(
+  "author",
+  {},
+  { idAttribute: "email" }
+);
+const emisor_ = new normalizr.schema.Entity(
+  "mensaje",
+  {
+    author: author_,
+  },
+  { idAttribute: "id" }
+);
+
+const _mensajes = new normalizr.schema.Entity(
+  "mensajes",
+  {
+    mensajes: [emisor_],
+  },{ idAttribute: "id" }
+);
+
+const desnormalizar = (listaMensajes) => {
+  console.log("normalizado", listaMensajes);
+  const desnormalizado = normalizr.denormalize(
+    listaMensajes.result,
+    _mensajes,
+    listaMensajes.entities
+  );
+  console.log("desnormalizado", desnormalizado);
+  return desnormalizado;
+};
+
 socket = io();
 const productoHtml = (prod) => {
   const newRow = document.createElement("tr");
@@ -45,7 +76,7 @@ const addProduct = (ev) => {
   const newProd = {
     title: document.querySelector("#title").value,
     price: document.querySelector("#price").value,
-    thumbnail: document.querySelector("#thumbnail").value,
+    price: document.querySelector("#thumbnail").value,
   };
   socket.emit("nuevoProducto", newProd);
 };
@@ -58,74 +89,73 @@ socket.on("canalProductos", (productos) => {
   listProdcuts(productos);
 });
 
-
-
-
 //apartado de chat
 
 const render = (data) => {
-  const element = data.map((user, index) => {
-    return `<div>
-                    <b class="text-primary">${user.author.id}</b>
-                    <i class="text-success">${user.text}</i>
-             </div>`;
-  });
-  document.querySelector("#mensajes").innerHTML = element;
+  console.log("en render", data);
+  if (data.length > 0) {
+    const element = data.map((user, index) => {
+      return `<div>
+                      <b class="text-primary">${user.author.email}</b>
+                      <i class="text-success">${user.text}</i>
+               </div>`;
+    });
+    document.querySelector("#mensajes").innerHTML = element;
+  }
 };
-
-
-
 
 const rndrOneMessage = (mensaje) => {
   const messageContainer = document.createElement("div");
-  messageContainer.innerHTML = `<b class="text-primary">${mensaje.author.id}</b>
+  messageContainer.innerHTML = `<b class="text-primary">${mensaje.author.email}</b>
   <i class="text-success">${mensaje.text}</i>`;
   document.querySelector("#mensajes").appendChild(messageContainer);
 };
 
-
-
-
 const addMessage = (ev) => {
-  const id_ = document.querySelector("#inputEmail");
+  const email_ = document.querySelector("#inputEmail");
   const nombre_ = document.querySelector("#inputNombre");
   const apellido_ = document.querySelector("#inputApellido");
   const edad_ = document.querySelector("#inputEdad");
   const alias_ = document.querySelector("#inputAlias");
   const avatar_ = document.querySelector("#inputAvatar");
-  const text_ = document.querySelector("#inputText")
+  const text_ = document.querySelector("#inputText");
 
   if (
-    id_.value.length === 0 ||
+    email_.value.length === 0 ||
     nombre_.value.length === 0 ||
     apellido_.value.length === 0 ||
     edad_.value.length === 0 ||
     alias_.value.length === 0 ||
     avatar_.value.length === 0
   ) {
-    id_.placeholder = "por favor ingrese correo";
+    email_.placeholder = "por favor ingrese correo";
   } else {
     socket.emit("nuevoMensaje", {
       author: {
-        id: id_.value,
+        email: email_.value,
         nombre: nombre_.value,
         apellido: apellido_.value,
         edad: edad_.value,
         alias: alias_.value,
         avatar: avatar_.value,
-      },text: text_.value
+      },
+      text: text_.value,
     });
   }
   return false;
 };
 
-
-
-
-socket.on("mensajes", (mensajes) => {
-  render(mensajes);
+socket.on("mensajes", (mensajes_) => {
+  if (mensajes_) {
+    // const mensajess = desnormalizar(mensajes_);
+    console.log("mensajes", mensajes_);
+    //render(mensajess);
+  }
 });
 
-socket.on("nuevoMensajeAtodos", (mensaje) => {
-  rndrOneMessage(mensaje);
+socket.on("nuevoMensajeAtodos", (mensajes__) => {
+  if (mensajes__) {
+    console.log("nuevo mensaje", mensajes__);
+    //rndrOneMessage(mensajes__);
+  }
 });
