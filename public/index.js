@@ -19,7 +19,6 @@ const _mensajes = new normalizr.schema.Entity(
 );
 
 const desnormalizar = (listaMensajes) => {
-  console.log("normalizado", listaMensajes);
   const desnormalizado = normalizr.denormalize(
     listaMensajes.result,
     _mensajes,
@@ -76,7 +75,7 @@ const addProduct = (ev) => {
   const newProd = {
     title: document.querySelector("#title").value,
     price: document.querySelector("#price").value,
-    price: document.querySelector("#thumbnail").value,
+    thumbnail : document.querySelector("#thumbnail").value,
   };
   socket.emit("nuevoProducto", newProd);
 };
@@ -147,15 +146,13 @@ const addMessage = (ev) => {
 
 socket.on("mensajes", (mensajes_) => {
   if (mensajes_) {
-    // const mensajess = desnormalizar(mensajes_);
-    console.log("mensajes", mensajes_);
-    //render(mensajess);
+    const mensajess = desnormalizar(mensajes_);
+    render(mensajess.mensajes);
   }
 });
 
-socket.on("nuevoMensajeAtodos", (mensajes__) => {
-  if (mensajes__) {
-    console.log("nuevo mensaje", mensajes__);
-    //rndrOneMessage(mensajes__);
+socket.on("nuevoMensajeAtodos", (mensaje_) => {
+  if (mensaje_) {
+    rndrOneMessage(mensaje_);
   }
 });

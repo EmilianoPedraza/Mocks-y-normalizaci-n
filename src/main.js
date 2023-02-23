@@ -8,22 +8,23 @@ const { Server: IOServer } = require("socket.io");
 const faker = require("faker");
 faker.locale = "es";
 const { commerce, image } = faker;
-
+//DEPENDENCIAS PARA NORMALIZAR
 const normalizeFormat = require("./normalizee/normalizeFormat");
-
-// para gestion mySQL y sqlite3
-// const gestionSql = require("./scriptsSql/gestionSql.js");
-// const { mysql, sqlite3 } = require("./conection/options.js");
-//construccion mySQL y sqlite3==============================
-// const productosSql = new gestionSql(mysql, "productos");
-// const mensajesSql = new gestionSql(sqlite3, "mensajes");
 
 //import fileSystem
 const mensajesFs = require("./conection/conectionFs/daos/mensajesFs");
 const productosFs = require("./conection/conectionFs/daos/productosFs");
 const mensajesFile = new mensajesFs();
 const productosFile = new productosFs();
-
+//MONGO
+//import para realizar la conección 
+const configConectionMongo = require("./conection/conectionMongo/config/configMongo")
+configConectionMongo()
+//import daos de mongo
+const mensajesMongo = require("./conection/conectionMongo/daos/mensajesMongoDaos");
+const productosMongo = require("./conection/conectionMongo/daos/productosMongoDaos");
+const mensajesMongo_ = new mensajesMongo
+const productosMongo_ = new productosMongo
 //necesarios para el servidor=========================================
 const app = express();
 const puerto = 8080;
@@ -51,10 +52,11 @@ io.on("connection", async (socket) => {
   socket.emit("canalProductos", listProd);
 
   socket.on("nuevoProducto", async (prod) => {
-    await productosFile.save(prod);
+    const prdInMongo = await productosMongo_.savee(prod)
+    await productosFile.save({id: prdInMongo,...prod});
     io.sockets.emit("actualizacionPrd", prod);
   });
-
+  //APARTADO DE MENSAJES
   const listMessage = await mensajesFile.getAll();
   if (listMessage.length > 0) {
     const recivoMensajeNormalizo_1 = await normalizeFormat(listMessage);
@@ -62,12 +64,9 @@ io.on("connection", async (socket) => {
   }
 
   socket.on("nuevoMensaje", async (msjRecib) => {
-    console.log("mensaje recibido", msjRecib);
-    await mensajesFile.save(msjRecib);
-    const todosMensajes = await mensajesFile.getAll();
-    console.log("TOdos los mensajes", todosMensajes)
-    const recivoMensajeNormalizo = await normalizeFormat(todosMensajes);
-    io.sockets.emit("nuevoMensajeAtodos", recivoMensajeNormalizo);
+    const msjInMongo = await mensajesMongo_.savee(msjRecib)
+    await mensajesFile.save({id: msjInMongo,...msjRecib});
+    io.sockets.emit("nuevoMensajeAtodos", msjRecib);
   });
 });
 

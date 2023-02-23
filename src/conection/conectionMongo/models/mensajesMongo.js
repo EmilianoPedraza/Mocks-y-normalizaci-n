@@ -2,10 +2,9 @@ const mongoose = require("mongoose")
 const { Schema }  = require("mongoose")
 
 
-const nameCollection = "productos"
+const nameCollection = "mensajes"
 
 const schemaCollection = new Schema({
-    id:{type: String, require: true},
     author:{
         email:{type:String, require: true},
         nombre: {type:String, require: true},
@@ -17,5 +16,5 @@ const schemaCollection = new Schema({
     text:{type:String}
 })
 
-export const esquema = schemaCollection
-module.exports = mongoose.model(nameCollection, schemaCollection)
+exports.mensajesModelo = schemaCollection
+exports.mensajes = mongoose.model(nameCollection, schemaCollection)

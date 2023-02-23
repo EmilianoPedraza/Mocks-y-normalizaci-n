@@ -7,9 +7,9 @@ const nameCollection = "productos"
 const schemaCollection = new Schema({
     title: {type:String, require:true},
     price: {type:String, require:true},
-    price: {type:Number, require:true},
+    thumbnail: {type:String, require:true},
 })
 
 
-export const esquema = schemaCollection
-module.exports = mongoose.model(nameCollection, schemaCollection)
+exports.productosModelo = schemaCollection
+exports.productos = mongoose.model(nameCollection, schemaCollection)
