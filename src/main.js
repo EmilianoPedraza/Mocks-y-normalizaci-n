@@ -4,36 +4,52 @@ const express = require("express");
 const { Server: HttpServer } = require("http");
 const { Server: IOServer } = require("socket.io");
 
-//DEPENDENCIA PARA TRABAJAR CON MOOKS
+//DEPENDENCIA PARA TRABAJAR CON MOOKS================================
 const faker = require("faker");
 faker.locale = "es";
 const { commerce, image } = faker;
-//DEPENDENCIAS PARA NORMALIZAR
+
+//DEPENDENCIAS PARA NORMALIZAR=======================================
 const normalizeFormat = require("./normalizee/normalizeFormat");
 
+
+//FILE SISTEM========================================================
 //import fileSystem
 const mensajesFs = require("./conection/conectionFs/daos/mensajesFs");
 const productosFs = require("./conection/conectionFs/daos/productosFs");
+
+//instancia de clases
 const mensajesFile = new mensajesFs();
 const productosFile = new productosFs();
-//MONGO
+
+//MONGO==============================================================
 //import para realizar la conección 
 const configConectionMongo = require("./conection/conectionMongo/config/configMongo")
 configConectionMongo()
+
 //import daos de mongo
 const mensajesMongo = require("./conection/conectionMongo/daos/mensajesMongoDaos");
 const productosMongo = require("./conection/conectionMongo/daos/productosMongoDaos");
+
+//istancia de clases
 const mensajesMongo_ = new mensajesMongo
 const productosMongo_ = new productosMongo
+//FIRE BASE===========================================================
+//imports daos FireBase
+const mensajesFireBase = require("./conection/conectionFireBase/daos/mensajesFireDaos")
+const productosFireBase = require("./conection/conectionFireBase/daos/productosFireDaos")
+//instancias de clases
+const mensajesFireBase_ = new mensajesFireBase
+const productosFireBase_ = new productosFireBase
 //necesarios para el servidor=========================================
 const app = express();
 const puerto = 8080;
 const publicRoute = "./public";
-//==============================================================================================
+//====================================================================
 //configuración de sockets
 const htmlserver = new HttpServer(app);
 const io = new IOServer(htmlserver);
-//==============================================================================================
+//====================================================================
 
 //se levanta el servidor
 const server = htmlserver.listen(puerto, () => {
@@ -42,7 +58,7 @@ const server = htmlserver.listen(puerto, () => {
   );
 });
 
-//==============================================================================================
+//=====================================================================
 //conección de sockets
 io.on("connection", async (socket) => {
   // await productosSql.deleteAll()
@@ -65,6 +81,7 @@ io.on("connection", async (socket) => {
 
   socket.on("nuevoMensaje", async (msjRecib) => {
     const msjInMongo = await mensajesMongo_.savee(msjRecib)
+    await mensajesFireBase_.saveeFb(msjRecib, msjInMongo)
     await mensajesFile.save({id: msjInMongo,...msjRecib});
     io.sockets.emit("nuevoMensajeAtodos", msjRecib);
   });

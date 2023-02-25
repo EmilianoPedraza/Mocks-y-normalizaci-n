@@ -20,7 +20,6 @@ class mensajesMongoDaos extends MongoGestion {
   savee = async (obj) => {
     try {
       if (!obj.id) {
-        console.log("savee: si no tiene id");
         const nuevo = await new this.schema(obj);
         await nuevo.save();
         const prod = await this.schema.find({_id:nuevo._id}).limit(1)
