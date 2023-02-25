@@ -9,8 +9,8 @@ const faker = require("faker");
 faker.locale = "es";
 const { commerce, image } = faker;
 
-//DEPENDENCIAS PARA NORMALIZAR=======================================
-const normalizeFormat = require("./normalizee/normalizeFormat");
+//DEPENDENCIAS PARA NORMALIZAR Y NORMALIZAR=======================================
+const {normalizeFormat, denormalizeFormat} = require("./normalizee/normalizeFormat");
 
 
 //FILE SISTEM========================================================
@@ -69,6 +69,7 @@ io.on("connection", async (socket) => {
 
   socket.on("nuevoProducto", async (prod) => {
     const prdInMongo = await productosMongo_.savee(prod)
+    await productosFireBase_.saveeFb(prod, prdInMongo)
     await productosFile.save({id: prdInMongo,...prod});
     io.sockets.emit("actualizacionPrd", prod);
   });
@@ -76,6 +77,17 @@ io.on("connection", async (socket) => {
   const listMessage = await mensajesFile.getAll();
   if (listMessage.length > 0) {
     const recivoMensajeNormalizo_1 = await normalizeFormat(listMessage);
+    const recivoMensajeDenormalizo_1 = await denormalizeFormat(recivoMensajeNormalizo_1)
+    //porcentaje de compreción de mennsajes
+    const tamano_mensajesNormalizado = JSON.stringify(recivoMensajeNormalizo_1).length
+    const tamano_mesajesDesnormalizado = JSON.stringify(recivoMensajeDenormalizo_1).length
+    // const porcentaje = ((1 - (tamano_mensajesNormalizado / tamano_mesajesDesnormalizado )) * 100) 
+    const porcentaje = (tamano_mesajesDesnormalizado * 100) / tamano_mensajesNormalizado
+
+    //envio el porcentaje de compreción
+    socket.emit("porcenntajeComprecion", Math.round(porcentaje) )
+
+    //envio la lista de mensajes normalizada
     socket.emit("mensajes", recivoMensajeNormalizo_1);
   }
 

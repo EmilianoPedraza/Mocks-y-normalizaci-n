@@ -20,4 +20,14 @@ const obtnrMsjsNormalizados = async (array) => {
   return (normalize({"id":"mensajes","mensajes": array}, _mensajes));
 };
 
-module.exports = obtnrMsjsNormalizados;
+const desnormalizar = async (listaMensajes) => {
+  const desnormalizado = denormalize(
+    listaMensajes.result,
+    _mensajes,
+    listaMensajes.entities
+  );
+  return desnormalizado;
+};
+
+exports.denormalizeFormat = desnormalizar
+exports.normalizeFormat = obtnrMsjsNormalizados;

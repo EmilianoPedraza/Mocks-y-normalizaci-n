@@ -24,7 +24,6 @@ const desnormalizar = (listaMensajes) => {
     _mensajes,
     listaMensajes.entities
   );
-  console.log("desnormalizado", desnormalizado);
   return desnormalizado;
 };
 
@@ -91,7 +90,6 @@ socket.on("canalProductos", (productos) => {
 //apartado de chat
 
 const render = (data) => {
-  console.log("en render", data);
   if (data.length > 0) {
     const element = data.map((user, index) => {
       return `<div>
@@ -143,6 +141,12 @@ const addMessage = (ev) => {
   }
   return false;
 };
+
+
+socket.on("porcenntajeComprecion", (porcentaje)=>{
+  const infoTittle = document.querySelector(".porcentajeComprecion")
+  infoTittle.innerHTML= `(compresión actual: ${porcentaje}%)`
+})
 
 socket.on("mensajes", (mensajes_) => {
   if (mensajes_) {
